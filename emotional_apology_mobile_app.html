@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Emotional Repair System</title>
+  <style>
+    :root {
+      --bg1: #160b22;
+      --bg2: #3b1438;
+      --bg3: #7b2f64;
+      --pink: #ff9acb;
+      --rose: #ff6fae;
+      --soft: #ffe3f0;
+      --white: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+      --glass: rgba(255,255,255,.12);
+      --glass-2: rgba(255,255,255,.18);
+      --line: rgba(255,255,255,.22);
+      --shadow: 0 25px 80px rgba(0,0,0,.35);
+      --good: #b7ffd7;
+      --sad: #9dccff;
+      --warn: #ffd1e5;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255,154,203,.32), transparent 30%),
+        radial-gradient(circle at 80% 10%, rgba(157,204,255,.22), transparent 35%),
+        radial-gradient(circle at 50% 100%, rgba(255,111,174,.30), transparent 40%),
+        linear-gradient(140deg, var(--bg1), var(--bg2) 45%, var(--bg3));
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(115deg, transparent, rgba(255,255,255,.08), transparent);
+      animation: aurora 9s infinite ease-in-out alternate;
+      opacity: .8;
+    }
+
+    @keyframes aurora {
+      from { transform: translateX(-25%) rotate(0deg); }
+      to { transform: translateX(25%) rotate(8deg); }
+    }
+
+    .app {
+      position: relative;
+      height: 100svh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      isolation: isolate;
+    }
+
+    .phone {
+      position: relative;
+      width: min(430px, 100%);
+      height: min(860px, 100%);
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 34px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.16), transparent 28%),
+        linear-gradient(to bottom, rgba(255,255,255,.08), transparent 28%, rgba(0,0,0,.13));
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      padding: 18px 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(20,8,31,.72), transparent);
+    }
+
+    .brand {
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.65);
+    }
+
+    .progress-wrap {
+      width: 98px;
+      height: 6px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.12);
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff9acb, #fff0f7, #9dccff);
+      box-shadow: 0 0 18px rgba(255,154,203,.8);
+      transition: width .8s ease;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 74px 22px 26px;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(18px) scale(.985);
+    }
+
+    .screen.active {
+      display: flex;
+      animation: enter .65s cubic-bezier(.19,1,.22,1) forwards;
+    }
+
+    @keyframes enter {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .center { text-align: center; align-items: center; }
+    .space { justify-content: space-between; }
+
+    .glass-card {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: linear-gradient(160deg, rgba(255,255,255,.18), rgba(255,255,255,.07));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 28px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.22);
+      padding: 22px;
+    }
+
+    .mini-card {
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.09);
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(32px, 9vw, 44px);
+      line-height: 1.02;
+      letter-spacing: -.05em;
+      text-shadow: 0 0 34px rgba(255,154,203,.32);
+    }
+
+    h2 {
+      font-size: clamp(25px, 7vw, 35px);
+      line-height: 1.08;
+      letter-spacing: -.04em;
+    }
+
+    h3 {
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.62;
+    }
+
+    .lead {
+      font-size: 16px;
+      color: rgba(255,255,255,.78);
+      margin-top: 16px;
+    }
+
+    .tiny {
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.54);
+    }
+
+    .soft-text { color: var(--soft); }
+
+    button {
+      border: 0;
+      color: #351024;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 15px;
+      background: linear-gradient(135deg, #fff3f8, #ff9acb 48%, #ffd9eb);
+      box-shadow: 0 16px 36px rgba(255,111,174,.25), inset 0 1px rgba(255,255,255,.8);
+      width: 100%;
+      cursor: pointer;
+      transition: transform .2s ease, filter .2s ease;
+    }
+
+    button:active { transform: scale(.97); }
+    button.ghost {
+      color: var(--white);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.20);
+      box-shadow: none;
+    }
+
+    .btn-row { display: grid; gap: 10px; width: 100%; margin-top: 18px; }
+
+    .heart-orb {
+      width: 132px;
+      height: 132px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      margin-bottom: 24px;
+      background: radial-gradient(circle at 35% 30%, #fff, #ffb4d8 42%, #ff6fae 70%, rgba(255,111,174,.25));
+      box-shadow: 0 0 38px rgba(255,154,203,.55), 0 0 100px rgba(255,111,174,.24);
+      animation: pulse 2.4s ease-in-out infinite;
+      font-size: 48px;
+    }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); filter: saturate(1); }
+      50% { transform: scale(1.055); filter: saturate(1.25); }
+    }
+
+    .typing {
+      min-height: 78px;
+      font-size: 17px;
+      line-height: 1.55;
+      color: rgba(255,255,255,.84);
+    }
+
+    .cursor::after {
+      content: "|";
+      animation: blink .8s infinite;
+      color: var(--pink);
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .scan-ring {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 22px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.18);
+      display: grid;
+      place-items: center;
+      position: relative;
+      background: radial-gradient(circle, rgba(255,255,255,.13), rgba(255,255,255,.03));
+      overflow: hidden;
+    }
+
+    .scan-ring::before {
+      content: "";
+      position: absolute;
+      width: 110%;
+      height: 35%;
+      background: linear-gradient(to bottom, transparent, rgba(255,154,203,.38), transparent);
+      animation: scan 2.2s infinite linear;
+    }
+
+    .scan-ring::after {
+      content: "";
+      position: absolute;
+      inset: 22px;
+      border-radius: inherit;
+      border: 1px dashed rgba(255,255,255,.24);
+      animation: rotate 12s infinite linear;
+    }
+
+    @keyframes scan { from { transform: translateY(-170px); } to { transform: translateY(170px); } }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+
+    .scan-core {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      font-size: 34px;
+    }
+
+    .choice-grid { display: grid; gap: 12px; margin-top: 18px; }
+
+    .choice {
+      text-align: left;
+      color: var(--white);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 22px;
+      padding: 15px;
+      box-shadow: none;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-weight: 650;
+    }
+
+    .choice span {
+      color: rgba(255,255,255,.72);
+      font-weight: 500;
+      font-size: 13px;
+      display: block;
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    .choice::before {
+      content: "♡";
+      color: var(--pink);
+      font-size: 18px;
+      margin-top: -1px;
+    }
+
+    .choice.correct {
+      border-color: rgba(183,255,215,.55);
+      box-shadow: 0 0 24px rgba(183,255,215,.12);
+    }
+
+    .reaction {
+      margin-top: 14px;
+      min-height: 46px;
+      color: var(--warn);
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: .35s ease;
+    }
+
+    .reaction.show { opacity: 1; transform: translateY(0); }
+
+    .memory-stack { display: grid; gap: 12px; margin-top: 18px; }
+
+    .memory {
+      min-height: 86px;
+      position: relative;
+      overflow: hidden;
+      transition: .45s ease;
+    }
+
+    .memory.locked { filter: blur(.2px) saturate(.6); opacity: .66; }
+    .memory.unlocked { border-color: rgba(255,154,203,.55); transform: translateY(-2px); }
+    .memory .lock { position: absolute; right: 14px; top: 13px; opacity: .7; }
+    .memory p { margin-top: 8px; font-size: 13px; }
+
+    .slider-area { margin-top: 20px; }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--rose);
+      height: 26px;
+    }
+
+    .meter-box {
+      height: 14px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: rgba(255,255,255,.12);
+      margin: 16px 0 10px;
+    }
+
+    .meter-fill {
+      width: 30%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #9dccff, #ff9acb, #fff0f7);
+      transition: width .35s ease;
+      box-shadow: 0 0 24px rgba(255,154,203,.45);
+    }
+
+    .file-system {
+      display: grid;
+      gap: 11px;
+      margin-top: 18px;
+    }
+
+    .file {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      padding: 13px 14px;
+      border-radius: 18px;
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .file small { color: rgba(255,255,255,.56); display: block; margin-top: 3px; }
+    .file b { font-size: 14px; }
+
+    .analysis-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(255,255,255,.68);
+      margin-bottom: 7px;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.12);
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff9acb, #fff);
+      border-radius: inherit;
+      transition: width 1.1s cubic-bezier(.19,1,.22,1);
+    }
+
+    .checklist { display: grid; gap: 10px; margin-top: 18px; }
+
+    .check {
+      display: flex;
+      gap: 11px;
+      align-items: flex-start;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 18px;
+      padding: 12px;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .box {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.35);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+
+    .check.done { border-color: rgba(183,255,215,.48); background: rgba(183,255,215,.10); }
+    .check.done .box { background: var(--good); color: #143521; border-color: transparent; }
+    .check.done .box::after { content: "✓"; font-weight: 900; }
+
+    .install-panel {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 22px;
+      background: rgba(0,0,0,.16);
+      border: 1px solid rgba(255,255,255,.16);
+    }
+
+    .install-line {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: rgba(255,255,255,.74);
+      font-size: 12px;
+      margin: 9px 0;
+    }
+
+    .final-card {
+      background: linear-gradient(160deg, rgba(255,255,255,.22), rgba(255,255,255,.09));
+      text-align: left;
+    }
+
+    .signature {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.82);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .float-layer, .rain-layer, .spark-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 3;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -30px;
+      color: rgba(255,220,236,.7);
+      animation: floatHeart linear infinite;
+      text-shadow: 0 0 16px rgba(255,154,203,.45);
+    }
+
+    @keyframes floatHeart {
+      to { transform: translateY(-105svh) translateX(var(--x)) rotate(28deg); opacity: 0; }
+    }
+
+    .drop {
+      position: absolute;
+      top: -40px;
+      width: 1px;
+      height: 44px;
+      background: linear-gradient(to bottom, transparent, rgba(157,204,255,.7));
+      animation: rainFall linear forwards;
+    }
+
+    @keyframes rainFall { to { transform: translateY(110svh); opacity: .2; } }
+
+    .spark {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 16px white;
+      animation: spark .85s ease-out forwards;
+    }
+
+    @keyframes spark {
+      to { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+    }
+
+    .modal {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(12,6,20,.55);
+      backdrop-filter: blur(9px);
+      z-index: 40;
+    }
+
+    .modal.show { display: flex; animation: enter .35s ease forwards; }
+
+    .modal .glass-card { max-height: 78svh; overflow: auto; }
+
+    .breath {
+      animation: breath 4s ease-in-out infinite;
+    }
+
+    @keyframes breath {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .fade-note {
+      margin-top: 13px;
+      font-size: 13px;
+      color: rgba(255,255,255,.6);
+    }
+
+    @media (max-height: 690px) {
+      .screen { padding-top: 62px; padding-bottom: 18px; }
+      h1 { font-size: 30px; }
+      h2 { font-size: 24px; }
+      p { font-size: 14px; line-height: 1.52; }
+      .heart-orb { width: 105px; height: 105px; font-size: 38px; margin-bottom: 14px; }
+      .scan-ring { width: 175px; height: 175px; }
+      .glass-card { padding: 18px; border-radius: 24px; }
+      .memory { min-height: 72px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="phone" id="phone">
+      <div class="float-layer" id="floatLayer"></div>
+      <div class="rain-layer" id="rainLayer"></div>
+      <div class="spark-layer" id="sparkLayer"></div>
+
+      <div class="topbar">
+        <div class="brand">emotional repair</div>
+        <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+      </div>
+
+      <section class="screen active center" data-screen="0">
+        <div class="heart-orb">♡</div>
+        <div class="glass-card breath">
+          <div class="tiny">private emotional interface</div>
+          <h1>Something soft was made for you.</h1>
+          <p class="lead">Not to prove you wrong. Not to escape responsibility. Just to understand the part of you that felt ignored, tired, and still important.</p>
+          <div class="btn-row">
+            <button onclick="nextScreen()">Open gently</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen center" data-screen="1">
+        <div class="glass-card">
+          <div class="tiny">emotional AI intro</div>
+          <h2>Listening before answering...</h2>
+          <p class="lead typing cursor" id="introTyping"></p>
+          <div class="btn-row">
+            <button id="introBtn" onclick="nextScreen()" style="display:none">Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen center" data-screen="2">
+        <div class="scan-ring">
+          <div class="scan-core">
+            <div>☁️</div>
+            <div class="tiny" id="scanStatus">scanning silence</div>
+          </div>
+        </div>
+        <div class="glass-card">
+          <div class="tiny">mood detector</div>
+          <h2>Emotional hurt detected.</h2>
+          <p class="lead">The system found that the pain was not created by anger alone. It came from missing time, missing attention, and waiting for softness.</p>
+          <div class="btn-row">
+            <button onclick="nextScreen()">Show what it found</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen space" data-screen="3">
+        <div>
+          <div class="tiny">memory reconstruction</div>
+          <h2>Rebuilding the emotional timeline.</h2>
+          <p class="lead">Tap the locked memories. Each one is not an excuse — it is a small admission.</p>
+          <div class="memory-stack">
+            <div class="mini-card memory locked" onclick="unlockMemory(this)"><span class="lock">🔒</span><h3>Time was not only a clock.</h3><p>It was how cared for you felt.</p></div>
+            <div class="mini-card memory locked" onclick="unlockMemory(this)"><span class="lock">🔒</span><h3>Silence did not feel neutral.</h3><p>It looked like emotional distance.</p></div>
+            <div class="mini-card memory locked" onclick="unlockMemory(this)"><span class="lock">🔒</span><h3>Your anger had meaning.</h3><p>It was hurt asking to be noticed.</p></div>
+          </div>
+        </div>
+        <button id="memoryBtn" onclick="nextScreen()" disabled style="opacity:.45">Unlock all memories</button>
+      </section>
+
+      <section class="screen" data-screen="4">
+        <div class="glass-card">
+          <div class="tiny">care meter calibration</div>
+          <h2>How much emotional effort feels real to you?</h2>
+          <p class="lead">Move the care meter. This is not about demanding perfection. It is about feeling chosen consistently.</p>
+          <div class="slider-area">
+            <input id="careSlider" type="range" min="0" max="100" value="35" oninput="updateCare()" />
+            <div class="meter-box"><div class="meter-fill" id="meterFill"></div></div>
+            <p id="careText">Small effort is visible, but your heart needed more emotional presence.</p>
+          </div>
+          <div class="btn-row">
+            <button id="careBtn" class="ghost" onclick="softBlock('Please raise the meter a little... this system believes your feelings deserved more than minimum effort.')">Continue</button>
+          </div>
+          <div class="reaction" id="careReaction"></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="5">
+        <div class="glass-card">
+          <div class="tiny">emotional question 01</div>
+          <h2>What makes you feel emotionally safe?</h2>
+          <div class="choice-grid">
+            <button class="choice" onclick="wrongChoice(this, 'Please select again… this system believes your feelings deserved softness, not distance.')">Being told not to overthink<span>Cold answers make hurt feel heavier.</span></button>
+            <button class="choice" onclick="rightChoice(this)">Consistent time, calm reassurance, and gentle effort<span>Safety grows when care becomes visible.</span></button>
+            <button class="choice" onclick="wrongChoice(this, 'Please select again… your heart was asking for care, not dismissal.')">Ignoring the issue until it disappears<span>Unanswered emotions do not disappear. They collect.</span></button>
+          </div>
+          <div class="reaction"></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="6">
+        <div class="glass-card">
+          <div class="tiny">hidden emotional files</div>
+          <h2>Private files recovered.</h2>
+          <p class="lead">Open each file. These are the things that should have been understood earlier.</p>
+          <div class="file-system">
+            <div class="file" onclick="openFile('file1')"><div><b>hurt_under_anger.txt</b><small>recovered emotional note</small></div><span>open</span></div>
+            <div class="file" onclick="openFile('file2')"><div><b>time_means_care.log</b><small>priority evidence</small></div><span>open</span></div>
+            <div class="file" onclick="openFile('file3')"><div><b>not_difficult_to_love.mem</b><small>important truth</small></div><span>open</span></div>
+          </div>
+          <div class="btn-row">
+            <button id="fileBtn" onclick="nextScreen()" disabled style="opacity:.45">Read all files</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="7">
+        <div class="glass-card">
+          <div class="tiny">emotional question 02</div>
+          <h2>What hurts more: distance or silence?</h2>
+          <div class="choice-grid">
+            <button class="choice" onclick="rightChoice(this)">Silence, when the heart is waiting for reassurance<span>Because silence can feel like being emotionally left alone.</span></button>
+            <button class="choice" onclick="wrongChoice(this, 'Please select again… silence should not be used where reassurance was needed.')">Nothing, she should just understand<span>This sounds easy, but it does not feel loving.</span></button>
+            <button class="choice" onclick="rightChoice(this)">Distance, when effort does not cross it<span>Love needs movement, not only feelings.</span></button>
+          </div>
+          <div class="reaction"></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="8">
+        <div class="glass-card">
+          <div class="tiny">priority analysis</div>
+          <h2>Emotional priority report.</h2>
+          <p class="lead">The system is not measuring love by words. It is checking where care needs repair.</p>
+          <div class="analysis-grid">
+            <div class="mini-card"><div class="bar-label"><span>Her feelings valid</span><b>100%</b></div><div class="bar"><i data-width="100"></i></div></div>
+            <div class="mini-card"><div class="bar-label"><span>Need for time</span><b>92%</b></div><div class="bar"><i data-width="92"></i></div></div>
+            <div class="mini-card"><div class="bar-label"><span>Excuses allowed</span><b>0%</b></div><div class="bar"><i data-width="4"></i></div></div>
+            <div class="mini-card"><div class="bar-label"><span>Repair possible</span><b>88%</b></div><div class="bar"><i data-width="88"></i></div></div>
+          </div>
+          <div class="btn-row">
+            <button onclick="nextScreen()">Install better effort</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="9">
+        <div class="glass-card">
+          <div class="tiny">promise installer</div>
+          <h2>Choose what should be installed.</h2>
+          <p class="lead">These promises only count if they become behavior.</p>
+          <div class="checklist">
+            <div class="check" onclick="toggleCheck(this)"><div class="box"></div><p>More present time, even in small moments.</p></div>
+            <div class="check" onclick="toggleCheck(this)"><div class="box"></div><p>Less disappearing when you need reassurance.</p></div>
+            <div class="check" onclick="toggleCheck(this)"><div class="box"></div><p>More patience when you are angry because you are hurt.</p></div>
+            <div class="check" onclick="toggleCheck(this)"><div class="box"></div><p>Apology shown through effort, not repeated like a line.</p></div>
+          </div>
+          <div class="install-panel">
+            <div class="install-line" id="installLine">waiting_for_promises...</div>
+            <div class="meter-box"><div class="meter-fill" id="installFill" style="width:0%"></div></div>
+          </div>
+          <div class="btn-row"><button id="promiseBtn" onclick="nextScreen()" disabled style="opacity:.45">Complete installation</button></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="10">
+        <div class="glass-card">
+          <div class="tiny">emotional question 03</div>
+          <h2>When you are angry, what helps emotionally?</h2>
+          <div class="choice-grid">
+            <button class="choice" onclick="wrongChoice(this, 'Please select again… anger should not be punished when it is hiding hurt.')">Being called dramatic<span>That only makes the wound feel unseen.</span></button>
+            <button class="choice" onclick="rightChoice(this)">A calm voice, real listening, and not leaving you alone with it<span>Softness can make anger feel safe enough to melt.</span></button>
+            <button class="choice" onclick="wrongChoice(this, 'Please select again… emotional repair needs presence, not ego.')">Winning the argument quickly<span>Winning can still leave the heart losing.</span></button>
+          </div>
+          <div class="reaction"></div>
+        </div>
+      </section>
+
+      <section class="screen center" data-screen="11">
+        <div class="glass-card">
+          <div class="tiny">soft apology sequence</div>
+          <h2>Repair sequence running...</h2>
+          <p class="lead typing cursor" id="apologyTyping"></p>
+          <div class="btn-row"><button id="apologyBtn" onclick="nextScreen()" style="display:none">Read final report</button></div>
+        </div>
+      </section>
+
+      <section class="screen center" data-screen="12">
+        <div class="glass-card final-card breath">
+          <div class="tiny">final emotional conclusion</div>
+          <h2>You mattered before this apology.</h2>
+          <p class="lead">Your feelings were valid. Your anger was not proof that you were difficult to love — it was proof that something inside you cared enough to feel hurt.</p>
+          <br />
+          <p>I understand now that time was not just time. It was reassurance. It was priority. It was the quiet feeling of being chosen without having to ask again and again.</p>
+          <br />
+          <p>This should become more than a sorry. It should become softer behavior, better effort, and a love that does not make you question your place.</p>
+          <br />
+          <p class="soft-text">The system found one final truth: your presence changed the emotional balance. You became important in a way that should be protected gently.</p>
+          <div class="signature">No pressure. No drama. Just a calm promise:<br />your heart deserved more attention, and I want to become better with it.</div>
+          <div class="btn-row"><button onclick="restartApp()">Replay softly</button></div>
+        </div>
+      </section>
+
+      <div class="modal" id="modal">
+        <div class="glass-card">
+          <div class="tiny" id="modalTitle">file opened</div>
+          <h2 id="modalHead"></h2>
+          <p class="lead" id="modalText"></p>
+          <div class="btn-row"><button onclick="closeModal()">Keep this</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const screens = [...document.querySelectorAll('.screen')];
+    const progress = document.getElementById('progress');
+    const rainLayer = document.getElementById('rainLayer');
+    const floatLayer = document.getElementById('floatLayer');
+    const sparkLayer = document.getElementById('sparkLayer');
+    const phone = document.getElementById('phone');
+    let current = 0;
+    let unlockedMemories = 0;
+    let openedFiles = new Set();
+    let typingTimers = [];
+
+    const fileContent = {
+      file1: {
+        title: 'hurt_under_anger.txt',
+        head: 'Your anger came from caring deeply.',
+        text: 'The system found emotional attachment hidden behind frustration. You were not asking for perfection. You were asking to feel remembered, valued, and emotionally safe.'
+      },
+      file2: {
+        title: 'time_means_care.log',
+        head: 'Time became emotional proof.',
+        text: 'When attention was missing, the heart did not read it as a schedule problem. It read it as: maybe I am not important enough. That feeling deserved comfort.'
+      },
+      file3: {
+        title: 'not_difficult_to_love.mem',
+        head: 'You were not difficult to love.',
+        text: 'You were only hurt by inconsistent effort. The repair is not to make you ask less. The repair is to care more clearly, more calmly, and more consistently.'
+      }
+    };
+
+    function updateProgress() {
+      progress.style.width = `${(current / (screens.length - 1)) * 100}%`;
+    }
+
+    function showScreen(index) {
+      screens.forEach(s => s.classList.remove('active'));
+      current = index;
+      screens[current].classList.add('active');
+      updateProgress();
+      runScreenEffects();
+    }
+
+    function nextScreen() {
+      if (current < screens.length - 1) showScreen(current + 1);
+    }
+
+    function runScreenEffects() {
+      clearTyping();
+      if (current === 1) typeText('introTyping', 'This interface will not ask you to ignore what hurt. It will first accept that your feelings mattered more than they were handled.', () => {
+        document.getElementById('introBtn').style.display = 'block';
+      });
+      if (current === 2) cycleScan();
+      if (current === 8) setTimeout(animateBars, 250);
+      if (current === 11) typeText('apologyTyping', 'I am sorry for the moments where you needed presence and received delay. I am sorry for making your heart explain something that should have been felt with care.', () => {
+        document.getElementById('apologyBtn').style.display = 'block';
+        burstSparkles();
+      });
+    }
+
+    function clearTyping() {
+      typingTimers.forEach(t => clearTimeout(t));
+      typingTimers = [];
+      ['introBtn','apologyBtn'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.style.display = 'none';
+      });
+      ['introTyping','apologyTyping'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '';
+      });
+    }
+
+    function typeText(id, text, done) {
+      const el = document.getElementById(id);
+      let i = 0;
+      function step() {
+        el.textContent = text.slice(0, i++);
+        if (i <= text.length) typingTimers.push(setTimeout(step, 32));
+        else if (done) done();
+      }
+      step();
+    }
+
+    function cycleScan() {
+      const el = document.getElementById('scanStatus');
+      const states = ['scanning silence', 'reading hurt', 'detecting attachment', 'validating feelings'];
+      let i = 0;
+      const interval = setInterval(() => {
+        if (current !== 2) return clearInterval(interval);
+        el.textContent = states[i++ % states.length];
+      }, 850);
+    }
+
+    function unlockMemory(card) {
+      if (card.classList.contains('unlocked')) return;
+      card.classList.remove('locked');
+      card.classList.add('unlocked');
+      card.querySelector('.lock').textContent = '♡';
+      unlockedMemories++;
+      burstSparkles();
+      if (unlockedMemories >= 3) {
+        const btn = document.getElementById('memoryBtn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = 'Continue with care';
+      }
+    }
+
+    function updateCare() {
+      const v = +document.getElementById('careSlider').value;
+      document.getElementById('meterFill').style.width = `${v}%`;
+      const text = document.getElementById('careText');
+      const btn = document.getElementById('careBtn');
+      const reaction = document.getElementById('careReaction');
+      reaction.classList.remove('show');
+
+      if (v < 45) {
+        text.textContent = 'Small effort is visible, but your heart needed more emotional presence.';
+        btn.className = 'ghost';
+        btn.onclick = () => softBlock('Please raise the meter a little... this system believes your feelings deserved more than minimum effort.');
+      } else if (v < 75) {
+        text.textContent = 'This feels closer: care that is steady enough to be felt, not guessed.';
+        btn.className = 'ghost';
+        btn.onclick = () => softBlock('Almost there… choose the kind of effort that does not make her wonder if she matters.');
+      } else {
+        text.textContent = 'Calibration accepted: she deserves visible priority, gentle time, and consistent reassurance.';
+        btn.className = '';
+        btn.onclick = nextScreen;
+      }
+    }
+
+    function softBlock(message) {
+      const r = document.getElementById('careReaction');
+      r.textContent = message;
+      r.classList.add('show');
+      makeRain(22);
+    }
+
+    function wrongChoice(btn, message) {
+      const box = btn.closest('.glass-card');
+      const reaction = box.querySelector('.reaction');
+      reaction.textContent = message;
+      reaction.classList.add('show');
+      makeRain(30);
+      phone.animate([
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-5px)' },
+        { transform: 'translateX(5px)' },
+        { transform: 'translateX(0)' }
+      ], { duration: 260 });
+    }
+
+    function rightChoice(btn) {
+      btn.classList.add('correct');
+      burstSparkles();
+      setTimeout(nextScreen, 650);
+    }
+
+    function openFile(key) {
+      const data = fileContent[key];
+      openedFiles.add(key);
+      document.getElementById('modalTitle').textContent = data.title;
+      document.getElementById('modalHead').textContent = data.head;
+      document.getElementById('modalText').textContent = data.text;
+      document.getElementById('modal').classList.add('show');
+      if (openedFiles.size >= 3) {
+        const btn = document.getElementById('fileBtn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = 'Continue to priority report';
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+    }
+
+    function animateBars() {
+      document.querySelectorAll('.screen.active .bar i').forEach(bar => {
+        bar.style.width = `${bar.dataset.width}%`;
+      });
+    }
+
+    function toggleCheck(row) {
+      row.classList.toggle('done');
+      const total = document.querySelectorAll('.check').length;
+      const done = document.querySelectorAll('.check.done').length;
+      const percent = Math.round((done / total) * 100);
+      document.getElementById('installFill').style.width = `${percent}%`;
+      document.getElementById('installLine').textContent = done === 0 ? 'waiting_for_promises...' : `installing_visible_effort... ${percent}%`;
+      if (done === total) {
+        document.getElementById('installLine').textContent = 'promise_installation_complete: behavior_required';
+        const btn = document.getElementById('promiseBtn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        burstSparkles();
+      }
+    }
+
+    function makeRain(count = 18) {
+      for (let i = 0; i < count; i++) {
+        const d = document.createElement('div');
+        d.className = 'drop';
+        d.style.left = Math.random() * 100 + '%';
+        d.style.animationDuration = (0.6 + Math.random() * 0.9) + 's';
+        d.style.opacity = 0.25 + Math.random() * 0.55;
+        rainLayer.appendChild(d);
+        setTimeout(() => d.remove(), 1600);
+      }
+    }
+
+    function burstSparkles() {
+      for (let i = 0; i < 24; i++) {
+        const s = document.createElement('div');
+        s.className = 'spark';
+        s.style.left = 45 + Math.random() * 10 + '%';
+        s.style.top = 42 + Math.random() * 16 + '%';
+        s.style.setProperty('--sx', (Math.random() * 180 - 90) + 'px');
+        s.style.setProperty('--sy', (Math.random() * 180 - 90) + 'px');
+        sparkLayer.appendChild(s);
+        setTimeout(() => s.remove(), 900);
+      }
+    }
+
+    function createFloatingHearts() {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.textContent = Math.random() > .35 ? '♡' : '♥';
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.fontSize = (13 + Math.random() * 18) + 'px';
+      heart.style.opacity = 0.25 + Math.random() * 0.55;
+      heart.style.setProperty('--x', (Math.random() * 90 - 45) + 'px');
+      heart.style.animationDuration = (7 + Math.random() * 8) + 's';
+      floatLayer.appendChild(heart);
+      setTimeout(() => heart.remove(), 15000);
+    }
+
+    function restartApp() {
+      current = 0;
+      unlockedMemories = 0;
+      openedFiles = new Set();
+      document.querySelectorAll('.memory').forEach((m, i) => {
+        m.classList.add('locked');
+        m.classList.remove('unlocked');
+        m.querySelector('.lock').textContent = '🔒';
+      });
+      document.querySelectorAll('.check').forEach(c => c.classList.remove('done'));
+      document.querySelectorAll('.bar i').forEach(b => b.style.width = '0%');
+      document.getElementById('memoryBtn').disabled = true;
+      document.getElementById('memoryBtn').style.opacity = '.45';
+      document.getElementById('memoryBtn').textContent = 'Unlock all memories';
+      document.getElementById('fileBtn').disabled = true;
+      document.getElementById('fileBtn').style.opacity = '.45';
+      document.getElementById('fileBtn').textContent = 'Read all files';
+      document.getElementById('promiseBtn').disabled = true;
+      document.getElementById('promiseBtn').style.opacity = '.45';
+      document.getElementById('installFill').style.width = '0%';
+      document.getElementById('installLine').textContent = 'waiting_for_promises...';
+      showScreen(0);
+    }
+
+    setInterval(createFloatingHearts, 900);
+    updateProgress();
+  </script>
+</body>
+</html>
